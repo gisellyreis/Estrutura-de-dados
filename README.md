@@ -6,3 +6,5 @@ T.A.D. -> Tipo Abstrato de Dados
 - Listas
  
 - Filas 
+
+- Fila-Vetorial-Circular
