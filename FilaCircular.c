@@ -18,7 +18,7 @@ bool isempty(queue_t *q);
 bool enqueue(element_t e, queue_t *q);
 element_t dequeue(queue_t *q);
 
-int main() {
+int main(void) {
     queue_t *fila = newQueue(5);
     bool teste;
     int x;
@@ -31,6 +31,8 @@ int main() {
         printf("%i ", dequeue(fila));
     }
     printf("\n");
+
+    return 0;
 }
 
 queue_t *newQueue(unsigned int n) {
