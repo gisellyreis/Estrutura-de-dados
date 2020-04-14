@@ -15,3 +15,5 @@ T.A.D. -> Tipo Abstrato de Dados
 - Pilha 
     Sequência ordenada e finita de zero ou mais elementos, não necessariamente distintos. O primeiro elemento da sequência é aquele inserido a menos tempo e o último elemento foi o primeiro a ser inserido (ordem LIFO).
     Remoção retira o último elemento inserido. Inserção coloca o elemeto no topo.
+
+- Pilha-Vetorial-Circular 
