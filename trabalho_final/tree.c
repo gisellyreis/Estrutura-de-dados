@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
-#include "tree.h"
+#include "queue.c"
 
 #define MAX(a,b) ((a > b) ? a : b)
-
-typedef enum { false, true }bool;
 
 intert *newInterval() {
     intert *i = (intert*) malloc(sizeof(intert));
@@ -32,7 +31,8 @@ int tree_height(nodet *root) {
 }
 
 nodet *get_max(nodet *root) {
-    while(root->right) root = root->right;
+    if(root)
+        while(root->right) root = root->right;
     return root;
 }
 
@@ -62,13 +62,13 @@ nodet *rebalance(nodet *root) {
 
     if(f == 2) {
         if(tree_height(root->left->right) > tree_height(root->right->left))
-            root->left = tree_rLeft(root->left);
-        root = tree_rRight(root);
+            root->left = rotateL(root->left);
+        root = rotateR(root);
     }
     else if(f == -2) {
         if(tree_height(root->right->left) > tree_height(root->right->right))
-            root->right = tree_rRight(root->right);
-        root = tree_rLeft(root);
+            root->right = rotateR(root->right);
+        root = rotateL(root);
     }
     if(root->right != NULL && root->left != NULL)
 		root->max = MAX(MAX(root->right->max,root->left->max), root->max);
@@ -84,7 +84,7 @@ nodet *node_insert(intert *x, nodet *root) {
         root = newNode();
         root->i = x;
         root->max = x->b;
-        return;
+        return root;
     }
     else if(x->a < root->i->a)
         root->left = node_insert(x, root->left);
@@ -98,29 +98,40 @@ nodet *node_insert(intert *x, nodet *root) {
 
 nodet *node_delete(intert *x, nodet *root) {
     nodet *p;
-    if(root == NULL) return root;
+    if(!root) return root;
     if(x->a < root->i->a) 
         root->left = node_delete(x, root->left);
     else if(x->a > root->i->a)
         root->right = node_delete(x, root->right);
     else {
-        if(root->left == NULL) {
-            p = root;
-            root = root->right;
-            free(p);
-        }
-        else if(root->right == NULL) {
-            p = root;
-            root = root->left;
-            free(p);
+        if(root->i->b != x->b){
+            root->left = node_delete(x, root->left);
+            root->right = node_delete(x, root->right);
         }
         else {
-            p = get_max(root->left);
-            root->i = p->i;
-            root->left = node_delete(p->i, root->left);
+            if(root->left == NULL) {
+                p = root;
+                root = root->right;
+                free(p->i);
+                free(p);
+            }
+            else if(root->right == NULL) {
+                p = root;
+                root = root->left;
+                free(p->i);
+                free(p);
+            }
+            else {
+                p = get_max(root->left);
+                root->i = p->i;
+                root->left = node_delete(p->i, root->left);
+            }
         }
     }
-    return rebalance(root);
+    if(root){
+        root = rebalance(root);
+    }
+    return root;
 }
 
 intert *search(intert *x, nodet *root) {
@@ -132,14 +143,9 @@ intert *search(intert *x, nodet *root) {
     else return search(x, root->right);
 }
 
-bool do_overlap(intert *x, intert *y) {
-    if(x->a <= y->b && y->b <= x->b) return true;
-    else return false;
-}
-
 intert *overlap(intert *x, nodet *root) {
     if(!root) return NULL;
-    if(do_overlap(x, root->i))
+    if(x->a <= root->i->b && root->i->b <= x->b)
         printf("[%03d,%03d] ", root->i->a, root->i->b);
     if(root->left!=NULL && root->left->max >= x->a)
         return overlap(x, root->left);
@@ -148,9 +154,57 @@ intert *overlap(intert *x, nodet *root) {
 }
 
 void inorder(nodet *root) {
-
+    if(root == NULL) return;
+    inorder(root->left);
+    printf("[%03d,%03d]\n", root->i->a, root->i->b);
+    inorder(root->right);
 }
 
 void display(nodet *root) {
+    if(!root) return;
+    unsigned int i, j, e, k, line = 1, height = root->height; 
+    nodet *flag = root;
+    char space[9] = "        ";
+    queuet *myQueue = newQueue();
+    e = pow(2, root->height) -1;
 
+    for(i =0; i< e; i++) printf("%s", space);
+
+    printf("[%03d,%03d]\n", root->i->a, root->i->b);
+
+    if(root->left) enqueue(root->left, myQueue);
+    else enqueue(root, myQueue);
+
+    if(root->right) enqueue(root->right, myQueue);
+    else enqueue(flag, myQueue);
+
+    while(line <= height) {
+        k = pow(2, line);
+        e = pow(2, height - line) -1;
+
+        for(i=0; i< k; i++) {
+            root = dequeue(myQueue);
+
+            if(root != flag) {
+                for(j = 0; j< e; j++) {printf("%s", space);}
+
+                printf("[%03d,%03d]\n", root->i->a, root->i->b);
+
+                for(j = 0; j<= e; j++) {printf("%s", space);}
+
+                if(root->left) enqueue(root->left, myQueue);
+                else enqueue(flag, myQueue);
+
+                if(root->right) enqueue(root->right, myQueue);
+                else enqueue(flag, myQueue);
+            }
+            else {
+                for(j = 0; j< 2*e+2; j++) {printf("%s", space);}
+                enqueue(flag, myQueue);
+                enqueue(flag, myQueue);
+            }
+        }
+        printf("\n");
+        line++;
+    }
 }
