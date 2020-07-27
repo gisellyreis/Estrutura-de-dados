@@ -28,7 +28,6 @@ nodet *rebalance(nodet *root);
 nodet *node_insert(intert *x, nodet *root);
 nodet *node_delete(intert *x, nodet *root);
 intert *search(intert *x, nodet *root);
-bool do_overlap(intert *x, intert *y);
 intert *overlap(intert *x, nodet *root);
 void inorder(nodet *root);
 void display(nodet *root);
